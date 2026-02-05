@@ -1,0 +1,67 @@
+{{- if .Values.migrate.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "echophase.fullname" . }}-migrate
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+  labels:
+    {{- include "echophase.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "echophase.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:16-alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for postgres to be ready..."
+          until pg_isready -h {{ include "echophase.fullname" . }}-postgres -p 5432 -U postgres; do
+            echo "Postgres not ready, sleeping..."
+            sleep 3
+          done
+          echo "Postgres is ready!"
+      - name: wait-for-scylla
+        image: cassandra:4
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for scylla to be ready..."
+          until cqlsh {{ include "echophase.fullname" . }}-scylla -e "SELECT now() FROM system.local"; do
+            echo "Scylla not ready, sleeping..."
+            sleep 3
+          done
+          echo "Scylla is ready!"
+      - name: wait-for-valkey
+        image: redis:alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for valkey to be ready..."
+          until redis-cli -h {{ include "echophase.fullname" . }}-valkey ping; do
+            echo "Valkey not ready, sleeping..."
+            sleep 3
+          done
+          echo "Valkey is ready!"
+      containers:
+      - name: migrate
+        image: "{{ .Values.imageRegistry }}/{{ .Values.migrate.image.repository }}:{{ .Values.migrate.image.tag }}"
+        imagePullPolicy: {{ include "echophase.imagePullPolicy" . }}
+        args: ["migrate"]
+        envFrom:
+        - configMapRef:
+            name: {{ include "echophase.fullname" . }}-config
+        - secretRef:
+            name: {{ include "echophase.fullname" . }}-secrets
+        resources:
+          {{- toYaml .Values.migrate.resources | nindent 10 }}
+  backoffLimit: 3
+{{- end }}

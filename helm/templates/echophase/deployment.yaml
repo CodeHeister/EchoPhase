@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "echophase.fullname" . }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+  labels:
+    {{- include "echophase.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.echophase.replicas }}
+  selector:
+    matchLabels:
+      {{- include "echophase.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "echophase.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+      - name: echophase
+        image: "{{ .Values.imageRegistry }}/{{ .Values.echophase.image.repository }}:{{ .Values.echophase.image.tag }}"
+        imagePullPolicy: {{ .Values.echophase.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.echophase.service.targetPort }}
+          name: echophase
+        envFrom:
+        - configMapRef:
+            name: {{ include "echophase.fullname" . }}-config
+        - secretRef:
+            name: {{ include "echophase.fullname" . }}-secrets
+        {{- if .Values.echophase.logs.enabled }}
+        volumeMounts:
+        - name: logs
+          mountPath: /app/Logs
+        {{- end }}
+        {{- if .Values.echophase.healthcheck.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.echophase.healthcheck.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.echophase.healthcheck.initialDelaySeconds }}
+          periodSeconds: {{ .Values.echophase.healthcheck.periodSeconds }}
+          timeoutSeconds: {{ .Values.echophase.healthcheck.timeoutSeconds }}
+          failureThreshold: {{ .Values.echophase.healthcheck.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.echophase.healthcheck.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.echophase.healthcheck.initialDelaySeconds }}
+          periodSeconds: {{ .Values.echophase.healthcheck.periodSeconds }}
+          timeoutSeconds: {{ .Values.echophase.healthcheck.timeoutSeconds }}
+          failureThreshold: {{ .Values.echophase.healthcheck.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.echophase.resources | nindent 10 }}
+      {{- if .Values.echophase.logs.enabled }}
+      volumes:
+      - name: logs
+        persistentVolumeClaim:
+          claimName: {{ include "echophase.fullname" . }}-logs-pvc
+      {{- end }}
