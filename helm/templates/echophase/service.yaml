@@ -9,7 +9,7 @@ spec:
   type: {{ .Values.echophase.service.type }}
   ports:
   - port: {{ .Values.echophase.service.port }}
-    targetPort: http
+    targetPort: {{ .Values.echophase.service.targetPort }}
     protocol: TCP
     name: http
   selector:

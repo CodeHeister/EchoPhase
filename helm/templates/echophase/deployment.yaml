@@ -26,7 +26,7 @@ spec:
         imagePullPolicy: {{ .Values.echophase.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.echophase.service.targetPort }}
-          name: echophase
+          name: http
         envFrom:
         - configMapRef:
             name: {{ include "echophase.fullname" . }}-config
