@@ -9,7 +9,7 @@ imageRegistry: localhost:5000
 # EchoPhase Backend
 echophase:
   image:
-    repository: echophase
+    repository: echophase-backend
     tag: latest
     pullPolicy: IfNotPresent
   

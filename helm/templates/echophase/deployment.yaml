@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "echophase.fullname" . }}
+  name: {{ include "echophase.fullname" . }}-backend
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "1"
@@ -21,7 +21,7 @@ spec:
         app.kubernetes.io/component: backend
     spec:
       containers:
-      - name: echophase
+      - name: backend
         image: "{{ .Values.imageRegistry }}/{{ .Values.echophase.image.repository }}:{{ .Values.echophase.image.tag }}"
         imagePullPolicy: {{ .Values.echophase.image.pullPolicy }}
         ports:
