@@ -37,8 +37,6 @@ spec:
           name: intra-node
         - containerPort: 7001
           name: tls-intra-node
-        - containerPort: 9042
-          name: cql-native
         - containerPort: 9160
           name: thrift
         - containerPort: 10000

@@ -173,6 +173,7 @@ export const AuthProvider: ParentComponent = (props) => {
             console.error('Logout failed:', err);
         } finally {
             await refetchUser();
+            await refetchCsrf();
             setIsLoading(false);
         }
     };
