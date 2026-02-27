@@ -11,7 +11,7 @@ echophase:
   image:
     repository: echophase-backend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   replicas: 1
 
@@ -59,7 +59,7 @@ frontend:
   image:
     repository: echophase-frontend
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   replicas: 1
 
