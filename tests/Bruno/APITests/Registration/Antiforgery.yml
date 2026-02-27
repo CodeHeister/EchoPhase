@@ -1,14 +1,11 @@
 info:
-  name: Jwt
+  name: Antiforgery
   type: http
   seq: 2
 
 http:
-  method: POST
-  url: "{{baseUrl}}/auth/jwt/@me"
-  headers:
-    - name: X-CSRF-TOKEN
-      value: "{{X-CSRF-TOKEN}}"
+  method: GET
+  url: "{{baseUrl}}/auth/antiforgery"
   auth: inherit
 
 runtime:
@@ -16,10 +13,10 @@ runtime:
     - type: set-variable
       phase: after-response
       selector:
-        expression: res.body.{{Id}}
+        expression: res.headers["x-csrf-token"]
         method: jsonq
       variable:
-        name: Bearer
+        name: X-CSRF-TOKEN
         scope: runtime
 
 settings:
