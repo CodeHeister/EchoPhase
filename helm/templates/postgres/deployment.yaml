@@ -48,9 +48,9 @@ spec:
         livenessProbe:
           exec:
             command:
-            - pg_isready
-            - -U
-            - $(POSTGRES_USER)
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER"
           initialDelaySeconds: {{ .Values.postgres.healthcheck.initialDelaySeconds }}
           periodSeconds: {{ .Values.postgres.healthcheck.periodSeconds }}
           timeoutSeconds: {{ .Values.postgres.healthcheck.timeoutSeconds }}
@@ -58,9 +58,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - pg_isready
-            - -U
-            - $(POSTGRES_USER)
+            - /bin/sh
+            - -c
+            - pg_isready -U "$POSTGRES_USER"
           initialDelaySeconds: {{ .Values.postgres.healthcheck.initialDelaySeconds }}
           periodSeconds: {{ .Values.postgres.healthcheck.periodSeconds }}
           timeoutSeconds: {{ .Values.postgres.healthcheck.timeoutSeconds }}
