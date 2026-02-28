@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "echophase.fullname" . }}-backend
+  name: {{ include "echophase.fullname" . }}-server
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "1"
     "helm.sh/hook-delete-policy": before-hook-creation
   labels:
     {{- include "echophase.labels" . | nindent 4 }}
-    app.kubernetes.io/component: backend
+    app.kubernetes.io/component: server
 spec:
   replicas: {{ .Values.echophase.replicas }}
   selector:
     matchLabels:
       {{- include "echophase.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: backend
+      app.kubernetes.io/component: server
   template:
     metadata:
       labels:
         {{- include "echophase.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: backend
+        app.kubernetes.io/component: server
     spec:
       containers:
-      - name: backend
+      - name: server
         image: "{{ .Values.imageRegistry }}/{{ .Values.echophase.image.repository }}:{{ .Values.echophase.image.tag }}"
         imagePullPolicy: {{ .Values.echophase.image.pullPolicy }}
         ports:

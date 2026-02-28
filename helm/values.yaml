@@ -9,7 +9,7 @@ imageRegistry: localhost:5000
 # EchoPhase Backend
 echophase:
   image:
-    repository: echophase-backend
+    repository: echophase/server
     tag: latest
     pullPolicy: Always
 
@@ -55,9 +55,9 @@ echophase:
     VALKEY_PORT: "6379"
 
 # EchoPhase Frontend
-frontend:
+ui:
   image:
-    repository: echophase-frontend
+    repository: echophase/ui
     tag: latest
     pullPolicy: Always
 

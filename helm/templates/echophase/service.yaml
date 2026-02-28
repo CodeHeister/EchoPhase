@@ -4,7 +4,7 @@ metadata:
   name: {{ include "echophase.fullname" . }}
   labels:
     {{- include "echophase.labels" . | nindent 4 }}
-    app.kubernetes.io/component: backend
+    app.kubernetes.io/component: server
 spec:
   type: {{ .Values.echophase.service.type }}
   ports:
@@ -14,4 +14,4 @@ spec:
     name: http
   selector:
     {{- include "echophase.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: backend
+    app.kubernetes.io/component: server
