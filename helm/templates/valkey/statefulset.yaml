@@ -1,6 +1,6 @@
 {{- if .Values.valkey.enabled }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "echophase.fullname" . }}-valkey
   labels:
@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: valkey
 spec:
   replicas: 1
+  serviceName: {{ include "echophase.fullname" . }}-valkey
   selector:
     matchLabels:
       {{- include "echophase.selectorLabels" . | nindent 6 }}
@@ -64,12 +65,25 @@ spec:
         {{- end }}
         resources:
           {{- toYaml .Values.valkey.resources | nindent 10 }}
+      {{- if not .Values.valkey.persistence.enabled }}
       volumes:
       - name: valkey-data
-        {{- if .Values.valkey.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ include "echophase.fullname" . }}-valkey-pvc
-        {{- else }}
         emptyDir: {}
-        {{- end }}
+      {{- end }}
+  {{- if .Values.valkey.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: valkey-data
+      annotations:
+        helm.sh/resource-policy: keep
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      {{- if .Values.valkey.persistence.storageClass }}
+      storageClassName: {{ .Values.valkey.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.valkey.persistence.size }}
+  {{- end }}
 {{- end }}
