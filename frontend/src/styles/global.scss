@@ -87,6 +87,10 @@ body {
   }
 }
 
+.no-transition * {
+    transition: none !important;
+}
+
 .ligatures {
   font-family:
     'Fira Code',
