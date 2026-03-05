@@ -1,14 +1,20 @@
 info:
-  name: Logout
+  name: Delete
   type: http
-  seq: 4
+  seq: 3
 
 http:
-  method: POST
-  url: "{{baseUrl}}/auth/logout"
+  method: DELETE
+  url: "{{baseUrl}}/auth/refresh"
   headers:
     - name: X-CSRF-TOKEN
       value: "{{X-CSRF-TOKEN}}"
+  body:
+    type: json
+    data: |-
+      {
+        "RefreshId": "{{RefreshId}}"
+      }
   auth: inherit
 
 settings:

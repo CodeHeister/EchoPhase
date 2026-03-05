@@ -1,11 +1,11 @@
 info:
-  name: Logout
+  name: DeleteAll
   type: http
-  seq: 4
+  seq: 5
 
 http:
-  method: POST
-  url: "{{baseUrl}}/auth/logout"
+  method: DELETE
+  url: "{{baseUrl}}/auth/refresh/all"
   headers:
     - name: X-CSRF-TOKEN
       value: "{{X-CSRF-TOKEN}}"

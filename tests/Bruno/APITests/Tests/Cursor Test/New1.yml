@@ -1,7 +1,7 @@
 info:
-  name: New
+  name: New1
   type: http
-  seq: 1
+  seq: 4
 
 http:
   method: POST
@@ -13,7 +13,7 @@ http:
     type: json
     data: |-
       {
-        "DeviceId": "{{DeviceId}}",
+        "DeviceId": "{{DeviceId1}}",
         "claims": {
           "scopes": ["api"],
           "intents": ["login"],
@@ -34,15 +34,7 @@ runtime:
     - type: set-variable
       phase: after-response
       selector:
-        expression: res.body["id"]
-        method: jsonq
-      variable:
-        name: RefreshId
-        scope: runtime
-    - type: set-variable
-      phase: after-response
-      selector:
-        expression: res.body["tokens"]["accessToken"]
+        expression: res.body["accessToken"]
         method: jsonq
       variable:
         name: AccessToken
@@ -50,7 +42,7 @@ runtime:
     - type: set-variable
       phase: after-response
       selector:
-        expression: res.body["tokens"]["refreshToken"]
+        expression: res.body["refreshToken"]
         method: jsonq
       variable:
         name: RefreshToken

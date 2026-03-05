@@ -1,14 +1,14 @@
 info:
-  name: Logout
+  name: Me
   type: http
   seq: 4
 
 http:
-  method: POST
-  url: "{{baseUrl}}/auth/logout"
+  method: GET
+  url: "{{baseUrl}}/auth/me"
   headers:
-    - name: X-CSRF-TOKEN
-      value: "{{X-CSRF-TOKEN}}"
+    - name: Authorization
+      value: Bearer {{AccessToken}}
   auth: inherit
 
 settings:
