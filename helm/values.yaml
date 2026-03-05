@@ -85,8 +85,9 @@ ui:
 migrate:
   enabled: true
   image:
-    repository: echophase
+    repository: echophase/server
     tag: latest
+    pullPolicy: Always
 
   resources:
     requests:
