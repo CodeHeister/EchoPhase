@@ -3,6 +3,7 @@ using System;
 using EchoPhase.DAL.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EchoPhase.DAL.Postgres.Migrations
 {
     [DbContext(typeof(PostgresContext))]
-    partial class PostgresContextModelSnapshot : ModelSnapshot
+    [Migration("20260320133631_Migration2")]
+    partial class Migration2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,40 +107,6 @@ namespace EchoPhase.DAL.Postgres.Migrations
                         .IsUnique();
 
                     b.ToTable("RefreshTokens", "EchoPhase");
-                });
-
-            modelBuilder.Entity("EchoPhase.DAL.Postgres.Models.RefreshTokenAudit", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid>("RefreshTokenId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RefreshTokenId");
-
-                    b.ToTable("RefreshTokenAudits", "EchoPhase");
                 });
 
             modelBuilder.Entity("EchoPhase.DAL.Postgres.Models.RefreshTokenIntent", b =>
@@ -512,17 +481,6 @@ namespace EchoPhase.DAL.Postgres.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EchoPhase.DAL.Postgres.Models.RefreshTokenAudit", b =>
-                {
-                    b.HasOne("EchoPhase.DAL.Postgres.Models.RefreshToken", "RefreshToken")
-                        .WithMany("Audits")
-                        .HasForeignKey("RefreshTokenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RefreshToken");
-                });
-
             modelBuilder.Entity("EchoPhase.DAL.Postgres.Models.RefreshTokenIntent", b =>
                 {
                     b.HasOne("EchoPhase.DAL.Postgres.Models.RefreshToken", "RefreshToken")
@@ -620,8 +578,6 @@ namespace EchoPhase.DAL.Postgres.Migrations
 
             modelBuilder.Entity("EchoPhase.DAL.Postgres.Models.RefreshToken", b =>
                 {
-                    b.Navigation("Audits");
-
                     b.Navigation("Intents");
 
                     b.Navigation("Permissions");
