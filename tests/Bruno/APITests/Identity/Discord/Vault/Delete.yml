@@ -1,10 +1,10 @@
 info:
-  name: Add
+  name: Delete
   type: http
-  seq: 1
+  seq: 3
 
 http:
-  method: POST
+  method: DELETE
   url: "{{baseUrl}}/discord/vault"
   headers:
     - name: X-CSRF-TOKEN
@@ -13,8 +13,7 @@ http:
     type: json
     data: |-
       {
-        "Name": "{{DiscordKeyName}}",
-        "Value": "{{DiscordToken}}" 
+        "Name": "{{DiscordKeyName}}"
       }
   auth: inherit
 

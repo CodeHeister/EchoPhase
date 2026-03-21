@@ -1,11 +1,11 @@
 info:
-  name: Logout
+  name: LogoutAll
   type: http
-  seq: 4
+  seq: 2
 
 http:
   method: DELETE
-  url: "{{baseUrl}}/sessions/current"
+  url: "{{baseUrl}}/sessions"
   headers:
     - name: X-CSRF-TOKEN
       value: "{{X-CSRF-TOKEN}}"
