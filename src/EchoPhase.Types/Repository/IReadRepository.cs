@@ -6,9 +6,12 @@ using EchoPhase.DAL.Abstractions;
 namespace EchoPhase.Types.Repository
 {
     /// <summary>
-    /// Full read/write repository contract.
+    /// Read-only access to a repository.
     /// </summary>
-    public interface IRepositoryBase<TEntity>
-        : IReadRepository<TEntity>, IWriteRepository<TEntity>
-        where TEntity : class, ITrackingEntity, IIdentifiable { }
+    public interface IReadRepository<TEntity>
+        where TEntity : class, ITrackingEntity, IIdentifiable
+    {
+        IQueryable<TEntity> Build();
+        RepositoryQuery<TEntity> Query();
+    }
 }
