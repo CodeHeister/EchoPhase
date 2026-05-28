@@ -6,6 +6,7 @@ import { AuthProvider } from '@lib/api';
 import { ThemeProvider } from '@lib/theme';
 import { CryptoProvider } from '@lib/crypto25519';
 import { CursorProvider } from '@lib/cursor';
+import { SessionProvider } from './lib/api/session-provider';
 
 interface RouterComponentProps {
     base?: string;
@@ -15,7 +16,7 @@ interface RouterComponentProps {
 const routes = [
     {
         path: '/',
-        component: lazy(() => import('./components/Home')),
+        component: lazy(() => import('./pages/HomePage')),
     },
     {
         path: '/about',
@@ -23,7 +24,7 @@ const routes = [
     },
     {
         path: '/auth',
-        component: lazy(() => import('./components/Auth')),
+        component: lazy(() => import('./pages/AuthPage')),
     },
     {
         path: '/cursor',
@@ -42,6 +43,10 @@ const routes = [
         component: lazy(() => import('./components/TableTest')),
     },
     {
+        path: '/sessions',
+        component: lazy(() => import('./pages/SessionsPage')),
+    },
+    {
         path: '*404',
         component: lazy(() => import('./components/NotFound')),
     },
@@ -52,13 +57,15 @@ const RouterComponent = (props: RouterComponentProps) => (
         <ThemeProvider>
             <I18nProvider>
                 <AuthProvider>
-                    <CursorProvider>
-                        <NavProvider>
-                            <Router base={props.base} root={props.root}>
-                                {routes}
-                            </Router>
-                        </NavProvider>
-                    </CursorProvider>
+                    <SessionProvider>
+                        <CursorProvider>
+                            <NavProvider>
+                                <Router base={props.base} root={props.root}>
+                                    {routes}
+                                </Router>
+                            </NavProvider>
+                        </CursorProvider>
+                    </SessionProvider>
                 </AuthProvider>
             </I18nProvider>
         </ThemeProvider>

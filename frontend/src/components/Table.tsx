@@ -1,4 +1,4 @@
-import { For, Show, JSX, Component } from 'solid-js';
+import { For, Show, JSX, Component, ParentComponent } from 'solid-js';
 import { useI18n } from '@lib/i18n';
 import '@styles/table.scss';
 
@@ -6,7 +6,7 @@ type DataLabel = string;
 
 type CellProps = {
     label: DataLabel;
-    text: string;
+    text?: string;
     events?: Partial<
         Record<
             keyof JSX.DOMAttributes<HTMLTableCellElement>,
@@ -25,7 +25,7 @@ type RowProps = {
     >;
 };
 
-export const Cell: Component<CellProps> = (props) => {
+export const Cell: ParentComponent<CellProps> = (props) => {
     const { t } = useI18n();
     return (
         <td
@@ -34,12 +34,16 @@ export const Cell: Component<CellProps> = (props) => {
             {...props.props}
             {...props.events}
         >
-            <span>{props.i18n ? t(props.i18n, props.text) : props.text}</span>
+            {props.children ?? (
+                <span>
+                    {props.i18n ? t(props.i18n, props.text) : props.text}
+                </span>
+            )}
         </td>
     );
 };
 
-export const Row: Component<RowProps> = (props) => {
+export const Row: ParentComponent<RowProps> = (props) => {
     return (
         <tr class="row" {...props.events}>
             {props.children}
@@ -56,6 +60,7 @@ type TableProps<T> = {
     headers: DataLabel[];
     placeholder: Component;
     render: (props: RowFactoryProps<T>) => Component<RowProps>;
+    tableProps?: JSX.HTMLAttributes<HTMLTableElement>;
 };
 
 export function Table<T>(props: TableProps<T>) {
@@ -68,7 +73,7 @@ export function Table<T>(props: TableProps<T>) {
                 </div>
             }
         >
-            <table>
+            <table {...props.tableProps}>
                 <thead>
                     <tr class="headers">
                         <For each={props.headers}>

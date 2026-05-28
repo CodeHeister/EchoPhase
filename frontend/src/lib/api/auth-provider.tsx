@@ -10,11 +10,12 @@ import type { User, LoginCredentials, RegisterData, ErrorItem } from '@lib/api';
 
 interface AuthContextValue {
     user: Accessor<User | null>;
+    roles: Accessor<string[] | null>;
     refetchUser: Promise<User | null>;
     isAuthenticated: Accessor<boolean>;
     isLoading: Accessor<boolean>;
     csrfToken: Accessor<string | null>;
-    refetchCsrf: Promise<string | null>;
+    refetchCsrf: () => Promise<string | null>;
     login: (
         credentials: LoginCredentials
     ) => Promise<{ success: boolean; error?: ErrorItem[] }>;
@@ -30,9 +31,6 @@ const AuthContext = createContext<AuthContextValue>();
 const CSRF_KEY = 'X-CSRF-TOKEN';
 
 export const AuthProvider: ParentComponent = (props) => {
-    // -------------------
-    // Signals & Resources
-    // -------------------
     const [isLoading, setIsLoading] = createSignal(false);
 
     const fetchMe = async (): Promise<User | null> => {
@@ -44,55 +42,47 @@ export const AuthProvider: ParentComponent = (props) => {
         if (!res.ok) return null;
         return res.json();
     };
+
     const [user, { refetch: refetchUser }] = createResource<User | null>(
         fetchMe
     );
 
     const isAuthenticated = () => !!user();
 
-    const fetchCsrfToken = async (): Promise<string | null> => {
-        sessionStorage.removeItem(CSRF_KEY);
+    const fetchRoles = async (): Promise<string[] | null> => {
         if (!isAuthenticated()) return null;
-
-        try {
-            const res = await fetch('/api/v1/auth/antiforgery', {
-                method: 'GET',
-                credentials: 'include',
-            });
-            if (!res.ok) return null;
-            const token = res.headers.get(CSRF_KEY);
-            if (token) {
-                sessionStorage.setItem(CSRF_KEY, token);
-                return token;
-            }
-            return null;
-        } catch {
-            return null;
-        }
+        const res = await fetch(`/api/v1/roles/me`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) return null;
+        return res.json();
     };
-    const [csrfToken, { refetch: refetchCsrf }] = createResource<string | null>(
+
+    const [roles, { refetch: refetchRoles }] = createResource<string[] | null>(
         () => isAuthenticated(),
-        fetchCsrfToken
+        fetchRoles
     );
 
-    // -------------------
-    // CSRF Helpers
-    // -------------------
+    const [csrfToken, setCsrfToken] = createSignal<string | null>(
+        sessionStorage.getItem(CSRF_KEY)
+    );
+
+    const refetchCsrf = async (): Promise<string | null> => {
+        sessionStorage.removeItem(CSRF_KEY);
+        setCsrfToken(null);
+        return null;
+    };
+
     const addCsrfToken = (): Record<string, string> => {
         const t = csrfToken();
-        if (!t) {
-            throw new Error(
-                'CSRF token is not available. Make sure to fetch it before making this request.'
-            );
-        }
+        if (!t) throw new Error('CSRF token is not available.');
         return { [CSRF_KEY]: t };
     };
 
     const hasCsrfToken = () => csrfToken() !== null;
 
-    // -------------------
-    // Auth Methods
-    // -------------------
     const login = async (credentials: LoginCredentials) => {
         try {
             setIsLoading(true);
@@ -103,7 +93,13 @@ export const AuthProvider: ParentComponent = (props) => {
                 body: JSON.stringify(credentials),
             });
             if (res.ok) {
+                const token = res.headers.get(CSRF_KEY);
+                if (token) {
+                    sessionStorage.setItem(CSRF_KEY, token);
+                    setCsrfToken(token);
+                }
                 await refetchUser();
+                await refetchRoles();
                 return { success: true };
             } else {
                 return {
@@ -173,16 +169,15 @@ export const AuthProvider: ParentComponent = (props) => {
             console.error('Logout failed:', err);
         } finally {
             await refetchUser();
+            await refetchRoles();
             await refetchCsrf();
             setIsLoading(false);
         }
     };
 
-    // -------------------
-    // Context Value
-    // -------------------
     const value: AuthContextValue = {
         user,
+        roles,
         refetchUser,
         isAuthenticated,
         isLoading,

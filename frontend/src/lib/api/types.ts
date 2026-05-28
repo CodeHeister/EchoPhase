@@ -22,3 +22,23 @@ export interface ErrorItem {
 export interface ErrorResponse {
     [key: string]: ErrorItem[];
 }
+
+export interface CursorOptions {
+    cursor?: string;
+    limit?: number;
+}
+
+export interface Session {
+    Id: string;
+    UserId: string;
+    DeviceId: string;
+    Scopes: string[];
+    Intents: string[];
+    Permissions: { Resource: string; Permissions: string[] }[];
+}
+
+export interface SessionsResponse {
+    Data: Session[];
+    NextCursor: string | null;
+    HasMore: boolean;
+}

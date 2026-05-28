@@ -64,7 +64,16 @@ type DropdownProps<T> = {
 export function Dropdown<T>(props: DropdownProps<T>) {
     const [isOpen, setIsOpen] = createSignal(false);
     const [searchTerm, setSearchTerm] = createSignal('');
+    const [dropUp, setDropUp] = createSignal(false);
     let dropdownRef: HTMLDivElement | undefined;
+    let menuRef: HTMLDivElement | undefined;
+
+    const calculateDropUp = () => {
+        if (!dropdownRef || !menuRef) return;
+        const triggerRect = dropdownRef.getBoundingClientRect();
+        const menuHeight = menuRef.getBoundingClientRect().height;
+        setDropUp(triggerRect.bottom + menuHeight > window.innerHeight);
+    };
 
     const handleClickOutside = (event: MouseEvent) => {
         if (dropdownRef && !dropdownRef.contains(event.target as Node)) {
@@ -73,6 +82,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
             document.removeEventListener('click', handleClickOutside);
             document.removeEventListener('focusout', handleClickOutside);
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('scroll', calculateDropUp, true);
         }
     };
 
@@ -80,14 +90,17 @@ export function Dropdown<T>(props: DropdownProps<T>) {
         const newState = !isOpen();
         setIsOpen(newState);
         if (newState) {
+            requestAnimationFrame(calculateDropUp);
             document.addEventListener('click', handleClickOutside);
             document.addEventListener('focusout', handleClickOutside);
             window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('scroll', calculateDropUp, true);
         } else {
             setSearchTerm('');
             document.removeEventListener('click', handleClickOutside);
             document.removeEventListener('focusout', handleClickOutside);
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('scroll', calculateDropUp, true);
         }
     };
 
@@ -95,6 +108,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
         document.removeEventListener('click', handleClickOutside);
         document.removeEventListener('focusout', handleClickOutside);
         window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('scroll', calculateDropUp, true);
     });
 
     const selectedOption = () =>
@@ -182,7 +196,12 @@ export function Dropdown<T>(props: DropdownProps<T>) {
     };
 
     return (
-        <div class="dropdown" ref={dropdownRef} data-open={isOpen()}>
+        <div
+            class="dropdown"
+            ref={dropdownRef}
+            data-open={isOpen()}
+            data-drop-up={dropUp()}
+        >
             <div
                 role="button"
                 tabindex="0"
@@ -209,7 +228,7 @@ export function Dropdown<T>(props: DropdownProps<T>) {
             </div>
 
             {isOpen() && (
-                <div class="dropdown-menu" role="listbox">
+                <div class="dropdown-menu" role="listbox" ref={menuRef}>
                     <For each={filteredOptions()}>
                         {(option) => (
                             <div

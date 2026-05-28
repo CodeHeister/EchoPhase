@@ -78,7 +78,7 @@ export default function LoginForm() {
 
             <button
                 type="submit"
-                class="form-button button"
+                class="btn btn-form"
                 disabled={isDisabled()}
                 aria-busy={isDisabled()}
             >

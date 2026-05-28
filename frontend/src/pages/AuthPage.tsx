@@ -6,7 +6,7 @@ import { BsArrowUpRight } from 'solid-icons/bs';
 import { useNav } from '@lib/nav';
 import '@styles/auth.scss';
 
-export default function Auth() {
+export default function AuthPages() {
     const [isRegister, setIsRegister] = createSignal(false);
     const { setNavLinks } = useNav();
     const { t } = useI18n();

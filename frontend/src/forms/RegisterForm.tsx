@@ -91,7 +91,7 @@ export default function RegisterForm() {
                     }
                 />
             </div>
-            <button type="submit" class="form-button button">
+            <button type="submit" class="btn btn-form">
                 {isDisabled()
                     ? i18n.t('loading', 'Loading...')
                     : i18n.t('form.submit', 'SUBMIT')}

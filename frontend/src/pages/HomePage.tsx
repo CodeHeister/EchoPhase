@@ -5,9 +5,10 @@ import { useRootMeta } from '@lib/root';
 import { useAuth } from '@lib/api';
 import { AiOutlineInfoCircle } from 'solid-icons/ai';
 import { TbBuildingEstate } from 'solid-icons/tb';
+import { VsSettings } from 'solid-icons/vs';
 import { useI18n } from '@lib/i18n';
 
-export default function Home() {
+export default function HomePage() {
     const { setTitle, setDescription } = useRootMeta();
     const { setNavLinks } = useNav();
     const { logout } = useAuth();
@@ -34,6 +35,18 @@ export default function Home() {
                 events: {
                     onClick: () => navigate('/about'),
                 },
+            },
+            {
+                icon: VsSettings,
+                text: 'Settings',
+                items: [
+                    {
+                        icon: VsSettings,
+                        label: 'Sessions',
+                        description: 'View active sessions',
+                        events: { onClick: () => navigate('/sessions') },
+                    },
+                ],
             },
             {
                 icon: AiOutlineInfoCircle,
