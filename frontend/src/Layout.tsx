@@ -12,7 +12,9 @@ const Layout: Component<ParentProps> = (props) => {
             <Show when={navLinks().length > 0}>
                 <NavBuilder links={navLinks()} />
             </Show>
+
             <Header />
+
             <main>{props.children}</main>
         </div>
     );

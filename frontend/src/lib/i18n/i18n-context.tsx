@@ -27,15 +27,17 @@ interface I18nContextType {
 const defaultLocale = 'en';
 const STORAGE_KEY = 'app_locale';
 
-const localeLoaders = import.meta.glob<string>(
-    '@/static/locales/*.json',
-    { query: '?raw', import: 'default', eager: false }
-);
+const localeLoaders = import.meta.glob<string>('@/static/locales/*.json', {
+    query: '?raw',
+    import: 'default',
+    eager: false,
+});
 
-const namespaceLoaders = import.meta.glob<string>(
-    '@/static/locales/*.*.json',
-    { query: '?raw', import: 'default', eager: false }
-);
+const namespaceLoaders = import.meta.glob<string>('@/static/locales/*.*.json', {
+    query: '?raw',
+    import: 'default',
+    eager: false,
+});
 
 const normalizedNamespaceLoaders = Object.keys(namespaceLoaders).reduce(
     (acc, path) => {
@@ -63,7 +65,7 @@ export function useLocalizer(namespace?: string) {
     const { currentLocale, _, loadNamespace } = useI18n();
 
     const [nsTranslations] = createResource(
-        () => namespace ? `${namespace}.${currentLocale()}` : null,
+        () => (namespace ? `${namespace}.${currentLocale()}` : null),
         async () => {
             if (!namespace) return null;
             return loadNamespace(namespace, currentLocale());
@@ -107,7 +109,8 @@ export function I18nProvider(props: { children: JSX.Element }) {
         if (typeof navigator !== 'undefined') {
             const lang =
                 navigator.language ||
-                (navigator as Navigator & { userLanguage?: string }).userLanguage;
+                (navigator as Navigator & { userLanguage?: string })
+                    .userLanguage;
             return lang?.slice(0, 2).toLowerCase() ?? null;
         }
         return null;
@@ -119,11 +122,13 @@ export function I18nProvider(props: { children: JSX.Element }) {
             if (stored && localeDefinitions[stored]) return stored;
         }
         const browserLocale = getBrowserLocale();
-        if (browserLocale && localeDefinitions[browserLocale]) return browserLocale;
+        if (browserLocale && localeDefinitions[browserLocale])
+            return browserLocale;
         return defaultLocale;
     }
 
-    const [currentLocale, setCurrentLocale] = createSignal<string>(getInitialLocale());
+    const [currentLocale, setCurrentLocale] =
+        createSignal<string>(getInitialLocale());
 
     const translationCache = new Map<string, Translations>();
 
@@ -140,10 +145,12 @@ export function I18nProvider(props: { children: JSX.Element }) {
     const [translations] = createResource(
         currentLocale,
         async (locale): Promise<Translations> => {
-            if (translationCache.has(locale)) return translationCache.get(locale)!;
+            if (translationCache.has(locale))
+                return translationCache.get(locale)!;
             try {
                 const loader = normalizedLoaders[locale];
-                if (!loader) throw new Error(`Loader not found for locale: ${locale}`);
+                if (!loader)
+                    throw new Error(`Loader not found for locale: ${locale}`);
                 const raw = await loader();
                 const loaded: Translations = JSON.parse(raw);
                 translationCache.set(locale, loaded);
@@ -154,7 +161,8 @@ export function I18nProvider(props: { children: JSX.Element }) {
             } catch (e) {
                 console.error(`Error loading locale "${locale}":`, e);
                 if (locale !== defaultLocale) {
-                    if (translationCache.has(defaultLocale)) return translationCache.get(defaultLocale)!;
+                    if (translationCache.has(defaultLocale))
+                        return translationCache.get(defaultLocale)!;
                     const defaultLoader = normalizedLoaders[defaultLocale];
                     if (defaultLoader) {
                         const raw = await defaultLoader();
@@ -168,7 +176,10 @@ export function I18nProvider(props: { children: JSX.Element }) {
         }
     );
 
-    async function loadNamespace(namespace: string, locale: string): Promise<Translations> {
+    async function loadNamespace(
+        namespace: string,
+        locale: string
+    ): Promise<Translations> {
         const key = `${namespace}.${locale}`;
         if (namespaceCache.has(key)) return namespaceCache.get(key)!;
 
@@ -177,7 +188,8 @@ export function I18nProvider(props: { children: JSX.Element }) {
         if (!loader) {
             if (locale !== defaultLocale) {
                 const defaultKey = `${namespace}.${defaultLocale}`;
-                if (namespaceCache.has(defaultKey)) return namespaceCache.get(defaultKey)!;
+                if (namespaceCache.has(defaultKey))
+                    return namespaceCache.get(defaultKey)!;
                 const defaultLoader = normalizedNamespaceLoaders[defaultKey];
                 if (defaultLoader) {
                     const raw = await defaultLoader();
@@ -199,7 +211,9 @@ export function I18nProvider(props: { children: JSX.Element }) {
         const available = availableLocales();
         const isValid = available?.some((l) => l.code === locale);
         if (!isValid) {
-            console.warn(`Locale "${locale}" not supported, fallback to '${defaultLocale}'`);
+            console.warn(
+                `Locale "${locale}" not supported, fallback to '${defaultLocale}'`
+            );
             locale = defaultLocale;
         }
         if (locale !== currentLocale()) {
@@ -216,7 +230,11 @@ export function I18nProvider(props: { children: JSX.Element }) {
         const parts = key.split('.');
         let current: string | Translations | undefined = trans;
         for (const part of parts) {
-            if (current == null || typeof current !== 'object' || !(part in current)) {
+            if (
+                current == null ||
+                typeof current !== 'object' ||
+                !(part in current)
+            ) {
                 return fallback ?? key;
             }
             current = current[part];
