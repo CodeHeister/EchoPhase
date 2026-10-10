@@ -45,4 +45,13 @@ export default defineConfig([
             'solid/jsx-no-undef': 'error',
         },
     },
+
+    {
+        // `let el; <div ref={el} />`: Solid's compiler assigns refs, which
+        // ESLint 10's no-unassigned-vars cannot see.
+        files: ['**/*.tsx'],
+        rules: {
+            'no-unassigned-vars': 'off',
+        },
+    },
 ]);

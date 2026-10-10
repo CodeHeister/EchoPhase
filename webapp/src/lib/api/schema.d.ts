@@ -912,6 +912,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    '/api/v1/gateway/intents': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Every intent, the permission it needs, and whether the caller's
+         *     token has it (an intent without a requirement is never allowed).
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/api/v1/auth/impersonation': {
         parameters: {
             query?: never;

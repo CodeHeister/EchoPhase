@@ -31,8 +31,7 @@ export default function RealtimeNotices() {
 
     useRealtimeEvent('connection.reauth_required', (event: RealtimeEvent) => {
         const connection = event.connection as
-            | { name?: string; provider?: string }
-            | undefined;
+            { name?: string; provider?: string } | undefined;
         add(
             i18n.t('notice.reauth.title', 'Connection needs attention'),
             i18n.t('notice.reauth.text', 'Reconnect') +
@@ -42,8 +41,7 @@ export default function RealtimeNotices() {
 
     useRealtimeEvent('discord_gateway.failed', (event: RealtimeEvent) => {
         const gateway = event.gateway as
-            | { connection?: string; message?: string }
-            | undefined;
+            { connection?: string; message?: string } | undefined;
         add(
             i18n.t('notice.discord.title', 'Discord gateway stopped') +
                 ` (${gateway?.connection ?? ''})`,

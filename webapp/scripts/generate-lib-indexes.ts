@@ -5,7 +5,7 @@ function toPascalCase(str: string) {
     return str.replace(/(^\w|-\w)/g, (m) => m.replace('-', '').toUpperCase());
 }
 
-const ROOT_DIR = path.resolve(__dirname, '../src/lib');
+const ROOT_DIR = path.resolve(import.meta.dirname, '../src/lib');
 const excludedRelativePaths = new Set<string>([
     'i18n/locales',
     '__tests__',

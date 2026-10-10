@@ -11,7 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "moduleResolution": "Bundler",
@@ -20,14 +19,14 @@
     "resolveJsonModule": true,
     "checkJs": false,
     "paths": {
-      "@/*": ["*"],
-      "@lib/*": ["lib/*"],
-      "@forms/*": ["forms/*"],
-      "@styles/*": ["styles/*"],
-      "@static/*": ["static/*"],
-      "@shaders/*": ["shaders/*"],
-      "@assets/*": ["static/assets/*"],
-      "@components/*": ["components/*"]
+      "@/*": ["./src/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@forms/*": ["./src/forms/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@static/*": ["./src/static/*"],
+      "@shaders/*": ["./src/shaders/*"],
+      "@assets/*": ["./src/static/assets/*"],
+      "@components/*": ["./src/components/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

@@ -5,7 +5,7 @@ import solidPlugin from 'vite-plugin-solid';
 import compress from 'vite-plugin-compression';
 import commonjs from '@rollup/plugin-commonjs';
 import path from 'path';
-import runBeforeBuildPlugin from './plugins/vite-plugin-run-before-build';
+import runBeforeBuildPlugin from './plugins/vite-plugin-run-before-build.ts';
 import Sitemap from 'vite-plugin-sitemap';
 
 const ClientSideRouting = {
@@ -41,14 +41,23 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             alias: {
-                '@': path.resolve(__dirname, 'src'),
-                '@lib': path.resolve(__dirname, 'src', 'lib'),
-                '@forms': path.resolve(__dirname, 'src', 'forms'),
-                '@styles': path.resolve(__dirname, 'src', 'styles'),
-                '@static': path.resolve(__dirname, 'src', 'static'),
-                '@shaders': path.resolve(__dirname, 'src', 'shaders'),
-                '@assets': path.resolve(__dirname, 'src', 'static', 'assets'),
-                '@components': path.resolve(__dirname, 'src', 'components'),
+                '@': path.resolve(import.meta.dirname, 'src'),
+                '@lib': path.resolve(import.meta.dirname, 'src', 'lib'),
+                '@forms': path.resolve(import.meta.dirname, 'src', 'forms'),
+                '@styles': path.resolve(import.meta.dirname, 'src', 'styles'),
+                '@static': path.resolve(import.meta.dirname, 'src', 'static'),
+                '@shaders': path.resolve(import.meta.dirname, 'src', 'shaders'),
+                '@assets': path.resolve(
+                    import.meta.dirname,
+                    'src',
+                    'static',
+                    'assets'
+                ),
+                '@components': path.resolve(
+                    import.meta.dirname,
+                    'src',
+                    'components'
+                ),
             },
             extensions: ['.js', '.jsx', '.ts', '.tsx', '.scss', '.css'],
         },
@@ -77,8 +86,8 @@ export default defineConfig(({ mode }) => {
             strictPort: true,
             // origin: 'http://localhost:8080',
         },
-        root: path.resolve(__dirname),
-        publicDir: path.resolve(__dirname, 'static'),
+        root: path.resolve(import.meta.dirname),
+        publicDir: path.resolve(import.meta.dirname, 'static'),
         // base: '/app',
         build: {
             target: 'esnext',
@@ -92,8 +101,8 @@ export default defineConfig(({ mode }) => {
             },
             rollupOptions: {
                 input: {
-                    index: path.resolve(__dirname, 'index.html'),
-                    main: path.resolve(__dirname, 'src', 'index.tsx'),
+                    index: path.resolve(import.meta.dirname, 'index.html'),
+                    main: path.resolve(import.meta.dirname, 'src', 'index.tsx'),
                 },
                 output: {
                     entryFileNames: 'js/[name].[hash].js',
@@ -108,7 +117,7 @@ export default defineConfig(({ mode }) => {
         settings.plugins.push(
             visualizer({
                 filename: path.resolve(
-                    __dirname,
+                    import.meta.dirname,
                     'dist',
                     'bundle-analysis.html'
                 ),

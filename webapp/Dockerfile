@@ -1,4 +1,5 @@
-FROM node:latest AS node-build
+# Same Node as mise.toml.
+FROM node:26.11.1 AS node-build
 WORKDIR /src
 
 COPY package*.json ./

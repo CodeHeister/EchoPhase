@@ -21,10 +21,7 @@ interface AuthContextValue {
     user: Accessor<User | null | undefined>;
     roles: Accessor<string[] | null | undefined>;
     refetchUser: () =>
-        | User
-        | null
-        | undefined
-        | Promise<User | null | undefined>;
+        User | null | undefined | Promise<User | null | undefined>;
     isAuthenticated: Accessor<boolean>;
     isLoading: Accessor<boolean>;
     csrfToken: Accessor<string | null>;
