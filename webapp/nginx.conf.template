@@ -1,0 +1,133 @@
+# Rendered at container start by the nginx image's entrypoint (envsubst).
+# Only API_UPSTREAM is replaced (NGINX_ENVSUBST_FILTER in the Dockerfile), so
+# nginx's own variables stay intact.
+#   API_UPSTREAM  host:port of the API service (set by the Helm chart)
+worker_processes auto;
+events {
+    worker_connections 1024;
+    multi_accept on;
+}
+http {
+    # No nginx version in Server headers and error pages.
+    server_tokens off;
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    gzip            on;
+    gzip_static     on;
+    gzip_vary       on;
+    gzip_comp_level 6;
+    # Below ~1 KiB gzip saves little and can grow the response.
+    gzip_min_length 1024;
+    # Also compress responses to requests that came through a proxy (the
+    # ingress adds Via).
+    gzip_proxied    any;
+    gzip_types
+        text/plain
+        text/css
+        application/javascript
+        application/json
+        application/wasm
+        image/svg+xml
+        font/ttf
+        font/otf
+        font/woff
+        font/woff2;
+
+    # ── Client IP ────────────────────────────────────────────────────────────
+    # Behind the ingress, $remote_addr is the ingress pod. Take the client from
+    # X-Forwarded-For, but only when the request came from inside the cluster,
+    # so a client talking to nginx directly cannot spoof it. Narrow to the
+    # cluster's pod CIDR in production.
+    set_real_ip_from 10.0.0.0/8;
+    set_real_ip_from 172.16.0.0/12;
+    set_real_ip_from 192.168.0.0/16;
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+
+    # ── Rate limits (coarse first line; the API enforces exact per-user limits) ──
+    # Credential endpoints only: other URIs map to an empty key, which nginx
+    # does not count, so one location can carry both limits.
+    map $uri $auth_limit_key {
+        ~^/api/v1/auth/(login|register|refresh|token|impersonation)$     $binary_remote_addr;
+        ~^/api/v1/connections/[^/]+/(authorize|callback)$                $binary_remote_addr;
+        default                                                          "";
+    }
+
+    limit_req_zone $auth_limit_key     zone=auth:10m rate=20r/m;
+    limit_req_zone $binary_remote_addr zone=api:10m  rate=30r/s;
+    limit_conn_zone $binary_remote_addr zone=realtime:10m;
+
+    limit_req_status  429;
+    limit_conn_status 429;
+    limit_req_log_level warn;
+
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+        
+		location /api/ {
+			limit_req zone=auth burst=10 nodelay;
+			limit_req zone=api  burst=60 nodelay;
+
+			proxy_pass http://${API_UPSTREAM};
+			proxy_http_version 1.1;
+			
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+			
+			proxy_set_header Connection "";
+			
+			proxy_connect_timeout 10s;
+			proxy_send_timeout 30s;
+			proxy_read_timeout 30s;
+		}
+
+		location /gateway/ {
+			# Upgrade attempts count against the API rate; open sockets are capped.
+			limit_req zone=api burst=60 nodelay;
+			limit_conn realtime 20;
+
+			proxy_pass http://${API_UPSTREAM};
+			proxy_http_version 1.1;
+			
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+			
+			proxy_set_header Upgrade $http_upgrade;
+			proxy_set_header Connection "upgrade";
+			
+			proxy_connect_timeout 60s;
+			proxy_send_timeout 60s;
+			proxy_read_timeout 60s;
+			
+			proxy_buffering off;
+			proxy_cache off;
+		}
+        
+        location ~* \.(js|css|woff2?|ttf|otf|svg|png|jpg|ico)$ {
+            access_log off;
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+        
+        location ~* \.map$ {
+            add_header Cache-Control "no-store";
+            try_files $uri =404;
+        }
+        
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}

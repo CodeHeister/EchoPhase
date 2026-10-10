@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext", "dom"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "moduleResolution": "Bundler",
+    "types": ["vite/client"],
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "checkJs": false,
+    "paths": {
+      "@/*": ["*"],
+      "@lib/*": ["lib/*"],
+      "@forms/*": ["forms/*"],
+      "@styles/*": ["styles/*"],
+      "@static/*": ["static/*"],
+      "@shaders/*": ["shaders/*"],
+      "@assets/*": ["static/assets/*"],
+      "@components/*": ["components/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules"]
+}
