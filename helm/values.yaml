@@ -4,14 +4,15 @@ global:
   storageClass: ""
 
 # Registry configuration
-imageRegistry: localhost:5000
+imageRegistry: localhost:30500
 
 # EchoPhase Backend
 echophase:
   image:
     repository: echophase/server
     tag: latest
-    pullPolicy: Always
+    # Empty: Always for "latest", IfNotPresent for other (immutable) tags.
+    pullPolicy: ""
 
   replicas: 1
 
@@ -22,15 +23,22 @@ echophase:
 
   resources:
     requests:
-      memory: "256Mi"
+      memory: "512Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      # The app (~250 MiB) plus Argon2:MaxConcurrentHashes (2) password hashes in
+      # flight, 64 MiB each (RFC 9106: Argon2id 64 MiB x 3, 4 lanes), and the GC's
+      # slack for their buffers. Keep MaxConcurrentHashes at the CPU limit.
+      memory: "1Gi"
+      # A hash takes ~0.6 s on one core; two cores run two at once (MaxConcurrentHashes).
+      cpu: "2"
 
   healthcheck:
     enabled: true
+    # Liveness: the process answers.
     path: /health/live
+    # Readiness: warm-up has finished, so the first request is not a cold start.
+    readinessPath: /health/ready
     initialDelaySeconds: 10
     periodSeconds: 5
     timeoutSeconds: 3
@@ -54,12 +62,13 @@ echophase:
     VALKEY_HOST: "{{ .Release.Name }}-valkey"
     VALKEY_PORT: "6379"
 
-# EchoPhase Frontend
-ui:
+# EchoPhase webapp (SolidJS + nginx)
+webapp:
   image:
-    repository: echophase/ui
+    repository: echophase/webapp
     tag: latest
-    pullPolicy: Always
+    # Empty: Always for "latest", IfNotPresent for other (immutable) tags.
+    pullPolicy: ""
 
   replicas: 1
 
@@ -70,8 +79,27 @@ ui:
 
   ingress:
     enabled: true
-    host: localhost
+    # *.localhost resolves to 127.0.0.1 in browsers without /etc/hosts entries.
+    host: echophase.localhost
     tls: false
+    # IngressClass to use; empty uses the cluster default.
+    className: ""
+    # Which ingress controller serves this Ingress: "nginx" (ingress-nginx) or
+    # "traefik" (k3s default). Decides how rate limits are expressed.
+    controller: nginx
+    # Extra annotations, merged with the generated ones.
+    annotations: {}
+    # Coarse per-client-IP limits for the whole site, static files included.
+    # Exact per-user limits are enforced by the API; nginx in the webapp pod adds
+    # per-endpoint limits in between.
+    rateLimit:
+      enabled: true
+      # Sustained requests per second per IP.
+      rps: 20
+      # Allowed burst = rps * burstMultiplier (a page load fetches many assets).
+      burstMultiplier: 5
+      # Concurrent connections per IP (ingress-nginx only).
+      connections: 50
 
   resources:
     requests:
@@ -81,13 +109,14 @@ ui:
       memory: "256Mi"
       cpu: "200m"
 
-# Database Migration Job
+# EF migrations: an init container of the server pods (runs on every start)
 migrate:
   enabled: true
   image:
     repository: echophase/server
     tag: latest
-    pullPolicy: Always
+    # Empty: Always for "latest", IfNotPresent for other (immutable) tags.
+    pullPolicy: ""
 
   resources:
     requests:
@@ -114,7 +143,6 @@ postgres:
 
   auth:
     username: echophase
-    password: qwerty123
     database: echophase
 
   resources:
@@ -148,7 +176,6 @@ valkey:
     size: 5Gi
 
   auth:
-    password: qwerty123
 
   resources:
     requests:
@@ -182,10 +209,12 @@ scylla:
 
   auth:
     username: echophase
-    password: qwerty123
 
   clusterName: echophase
   keyspace: echophase
+  # Let the app create the keyspace (NetworkTopologyStrategy) on first connect.
+  # Only for this single-node deployment; use a migration for real clusters.
+  autoCreateKeyspace: true
   autoBootstrap: 1
 
   resources:
@@ -207,11 +236,14 @@ scylla:
 networkPolicy:
   enabled: false
 
-# Secrets - override these in production!
+# Credentials, rendered into the <release>-secrets Secret. Passwords have no
+# defaults: put them in helm/secrets.yaml (gitignored; copy
+# secrets.example.yaml), which `mise run helm:*` passes when it exists.
 secrets:
   POSTGRES_USER: echophase
-  POSTGRES_PASSWORD: qwerty123
   POSTGRES_DB: echophase
-  VALKEY_PASSWORD: qwerty123
+  # POSTGRES_PASSWORD: required
+  # VALKEY_PASSWORD: required
   SCYLLA_USERNAME: echophase
-  SCYLLA_PASSWORD: qwerty123
+  # Scylla runs without authentication here, so this may stay empty.
+  SCYLLA_PASSWORD: ""

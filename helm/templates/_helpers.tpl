@@ -54,3 +54,12 @@ Image pull policy
 {{- define "echophase.imagePullPolicy" -}}
 {{- .Values.global.imagePullPolicy | default "IfNotPresent" }}
 {{- end }}
+
+{{/*
+Pull policy of one of our images (pass its .image values): the explicit
+pullPolicy if set, else Always for the moving "latest" tag and IfNotPresent
+for any other tag (docker:publish pushes an immutable tag per build).
+*/}}
+{{- define "echophase.appImagePullPolicy" -}}
+{{- .pullPolicy | default (ternary "Always" "IfNotPresent" (eq (toString .tag) "latest")) }}
+{{- end }}

@@ -1,1 +1,6 @@
+# Per-environment overrides (values.k3s.yaml, ...) stay local.
 values.*.yaml
+# Credentials; only the example is committed.
+secrets.yaml
+secrets.*.yaml
+!secrets.example.yaml
